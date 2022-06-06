@@ -34,7 +34,7 @@ void APlanet::PostInitializeComponents()
 
 	
 	// update the mesh
-	planetaryMesh->SetMaterial(0, planetaryMaterial);
+	//planetaryMesh->SetMaterial(0, planetaryMaterial);
 	planetMeshComponent->SetStaticMesh(planetaryMesh);
 
 
