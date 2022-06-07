@@ -5,6 +5,8 @@
 
 #include "Kismet/GameplayStatics.h"
 
+#include "SceneManagement.h"
+
 #include <random>
 #include <vector>
 #include <chrono>
@@ -16,33 +18,35 @@ APlanet::APlanet()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// mesh component (root)
 	planetMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Planet Base"));
-	//baseRotator = CreateDefaultSubobject<USceneComponent>(TEXT("Base Rotator"));
+	planetMeshComponent->SetupAttachment(RootComponent);
+
+	// camera spring arm
 	springArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
-	cameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-
-
-	//planetMeshComponent->SetStaticMesh(planetaryMesh);
-	//baseRotator->SetupAttachment(planetMeshComponent);
 	springArm->SetupAttachment(planetMeshComponent);
+
+	// camera
+	cameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	cameraComp->SetupAttachment(springArm, USpringArmComponent::SocketName);
+
+	// update the mesh
+	planetMeshComponent->SetStaticMesh(planetaryMesh);
 }
 
 void APlanet::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	
 	// update the mesh
-	//planetaryMesh->SetMaterial(0, planetaryMaterial);
 	planetMeshComponent->SetStaticMesh(planetaryMesh);
-
-
 
 	// update spring arm length
 	springArm->TargetArmLength = radius * 2.0;
 	springArm->bEnableCameraLag = true;
 	springArm->CameraLagSpeed = 3.0f;
+	springArm->bEnableCameraRotationLag = true;
+	springArm->CameraRotationLagSpeed = 3.0f;
 
 	// reset the scale of the mesh
 	// default radius is 50 of the mesh so scale by that
@@ -56,8 +60,6 @@ void APlanet::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// update the mesh
-	//planetMeshComponent->SetStaticMesh(planetaryMesh);
 
 	// get reference to player controller.
 	auto playerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
@@ -70,22 +72,23 @@ void APlanet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// determine if culling features are enabled
 	if (useCullingFeatures) {
 
 		// loop through all of the trees
 		for (auto tree : trees) {
+
+			//don't do anything if the tree was removed by right-click
 			if (!tree) continue;
 
-			// get the spring vector
+			// determine if tree should be visible
 			FVector v1 = cameraComp->GetComponentLocation().GetSafeNormal();
 			FVector v2 = tree->GetActorLocation().GetSafeNormal();
-
 			double prod = FVector::DotProduct(v1, v2);
+
 			if (prod < 0.0) {
 				tree->SetActorHiddenInGame(true);
-			}
-			else
-			{
+			} else {
 				tree->SetActorHiddenInGame(false);
 			}
 
@@ -93,6 +96,8 @@ void APlanet::Tick(float DeltaTime)
 
 	}
 	else {
+
+		// enable all trees
 		for (auto tree : trees) {
 			if (!tree) continue;
 
@@ -112,19 +117,9 @@ void APlanet::regenerateTrees(int num, float minHeight, float maxHeight, float m
 	}
 	trees.Empty();
 
-	// create new trees
-	// first, come up with all random heights, radii, etc
-	// assume random lat/lon
-	//std::default_random_engine generator;
-	//generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
-	//std::uniform_real_distribution<float> radiusDistribution(minRadius, maxRadius);
-	//std::uniform_real_distribution<float> heightDistribution(minHeight, maxHeight);
-	//std::uniform_real_distribution<float> latDistribution(-PI, PI);
-	//std::uniform_real_distribution<float> lonDistribution(0, 2.0*PI);
+	for (int i = 0; i < num; ++i) {
 
-
-	for (size_t i = 0; i < num; ++i) {
-
+		// generate random location, radius and height of the tree
 		float treeRadius	= FMath::RandRange(minRadius, maxRadius);
 		float height		= FMath::RandRange(minHeight, maxHeight);
 		float lat			= FMath::RandRange(-0.5*PI, 0.5*PI);
@@ -139,8 +134,9 @@ void APlanet::regenerateTrees(int num, float minHeight, float maxHeight, float m
 		// compute the rotation. 
 		FRotator rot(loc.Rotation());
 		rot = rot.Add(-90, 0, 0);
+
+		// spawn the new tree into the world.
 		auto newTree = GetWorld()->SpawnActor(treeType, &loc, &rot);
-		
 
 		// default tree size is 100x100x100, so we need to scale appropriately
 		// default radius is 50
@@ -150,11 +146,7 @@ void APlanet::regenerateTrees(int num, float minHeight, float maxHeight, float m
 		// add to the array
 		trees.Add(newTree);
 
-		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::White, TEXT("Position: " + FString::SanitizeFloat()));
-
 	}
-
-
 
 }
 

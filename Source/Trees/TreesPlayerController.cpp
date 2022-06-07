@@ -40,6 +40,9 @@ void ATreesPlayerController::BeginPlay() {
 	// set default camera dist
 	springArm->TargetArmLength = 5.0 * currentPlanet->radius;
 
+	// smoother way to do the rotation
+	//baseRotator = springArm->GetAttachParent();
+
 }
 
 void ATreesPlayerController::SetupInputComponent() {
@@ -71,12 +74,15 @@ void ATreesPlayerController::Zoom(float d) {
 }
 
 void ATreesPlayerController::RotateLon(float dx) {
-	yaw += rotateSpeed*dx;
+	yaw = FMath::Fmod(yaw + rotateSpeed * dx, 360);
+	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Blue, TEXT("" + FString::SanitizeFloat(yaw)));
+
 	RotateSpring();
 
 }
 void ATreesPlayerController::RotateLat(float dy) {
-	pitch += rotateSpeed*dy;
+	//pitch += rotateSpeed*dy;
+	pitch = FMath::Clamp(pitch + rotateSpeed * dy, -90, 90);
 	RotateSpring();
 
 }

@@ -31,7 +31,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 
-	// rotation functions
+	// camera rotation and zoom functions
 	void RotateLon(float dx);
 	void RotateLat(float dy);
 	void Zoom(float d);

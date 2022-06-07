@@ -6,7 +6,7 @@
 void ATreesGameModeBase::BeginPlay() {
 	Super::BeginPlay();
 
-
+	// Add our UI to the viewport on start.
 	CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), StartingWidgetClass);
 	CurrentWidget->AddToViewport();
 

@@ -26,6 +26,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planetary Data")
 	float radius;
 
+	// mesh to use for the planetary body (sphere)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planetary Data")
 	UStaticMesh* planetaryMesh;
 
@@ -33,15 +34,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tree Data")
 	TSubclassOf<AActor> treeType;
 
-	UFUNCTION(BlueprintCallable)
-	void regenerateTrees(int num, float minHeight, float maxHeight, float minRadius, float maxRadius);
-
+	// using culling features (disabling trees on planetary far-side)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tree Data")
 	bool useCullingFeatures;
 
-	// planetary material
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planetary Data")
-	UMaterial* planetaryMaterial;
+	// regenerate trees
+	UFUNCTION(BlueprintCallable)
+	void regenerateTrees(int num, float minHeight, float maxHeight, float minRadius, float maxRadius);
 
 protected:
 	// Called when the game starts or when spawned

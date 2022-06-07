@@ -16,9 +16,8 @@ class TREES_API ATreesGameModeBase : public AGameModeBase
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = "Trees")
-	int maxTrees;
 
+	// Get a reference to the type of widget to spawn
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UMG Game")
 	TSubclassOf<UUserWidget> StartingWidgetClass;
 
